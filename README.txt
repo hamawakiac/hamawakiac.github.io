@@ -1,10 +1,19 @@
-HAMAWAKI AC トップページ
+浜脇AC トップページ
 
-設置方法
-1. このZIPを展開します。
-2. index.html / style.css / script.js / hero.png を、GitHubの hamawakiac.github.io リポジトリ直下へアップロードします。
-3. Settings → Pages → Deploy from a branch → main / (root) を選択します。
-4. https://hamawakiac.github.io/ で確認します。
+【ファイル】
+index.html
+style.css
+script.js
 
-menuフォルダは削除しないでください。
-練習メニューのリンク先は https://hamawakiac.github.io/menu/ に設定済みです。
+【公開方法】
+1. 3ファイルをGitHub Pagesの公開フォルダへアップロードします。
+2. index.htmlをトップ階層に置きます。
+3. 練習メニューのリンク先は、現在
+   https://hamawakiac.github.io/menu/
+   に設定しています。
+
+【変更する場所】
+・問い合わせ先：index.html内の「お問い合わせ」欄
+・お知らせ：index.html内のNEWS欄
+・活動時間：index.html内の活動時間欄
+・ロゴ：現在は文字ロゴです。画像ロゴに変更可能です。

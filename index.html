@@ -1,91 +1,170 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1167e8">
-  <meta name="description" content="兵庫県西宮市で活動する中学生向け陸上クラブ、HAMAWAKI ACの公式サイトです。">
-  <title>HAMAWAKI AC｜中学生のための陸上クラブ</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1268ff" />
+  <title>浜脇AC｜Hamawaki Athletic Club</title>
+  <meta name="description" content="浜脇ACは、中学生を中心に活動する陸上競技クラブです。競技力向上と人間的成長を目指して活動しています。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<header class="header">
-  <a class="logo" href="#top" aria-label="トップへ">
-    <span class="runner">➤</span>
-    <span>HAMAWAKI AC</span>
-  </a>
-  <button class="menu-btn" type="button" aria-label="メニューを開く" aria-expanded="false"><span></span><span></span><span></span></button>
-  <nav class="nav" aria-label="メインメニュー">
-    <a class="active" href="#top">ホーム</a><a href="#about">クラブ紹介</a><a href="#activity">活動内容</a>
-    <a href="https://hamawakiac.github.io/menu/">練習メニュー</a><a href="#news">お知らせ</a><a href="#contact">お問い合わせ</a>
-  </nav>
-</header>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#top" class="brand" aria-label="浜脇ACトップへ">
+        <div class="brand-mark">H</div>
+        <div>
+          <p class="brand-name">HAMAWAKI AC</p>
+          <p class="brand-sub">浜脇アスレチッククラブ</p>
+        </div>
+      </a>
 
-<main id="top">
-<section class="hero">
-  <div class="hero-copy">
-    <p class="eyebrow">HAMAWAKI ATHLETIC CLUB</p>
-    <h1><span>走るって、</span><br>もっと楽しい。</h1>
-    <p>兵庫県西宮市で活動する、中学生のための陸上クラブ。<br>自分の目標に向かって、仲間と一緒に成長しよう。</p>
-    <div class="hero-buttons">
-      <a class="btn blue" href="https://hamawakiac.github.io/menu/">👟 練習メニューを見る</a>
-      <a class="btn green" href="#contact">⚑ 体験参加について</a>
+      <button class="menu-button" aria-label="メニューを開く" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="global-nav" aria-label="メインメニュー">
+        <a href="#about">クラブ紹介</a>
+        <a href="#activity">活動内容</a>
+        <a href="#schedule">活動時間</a>
+        <a href="#contact">お問い合わせ</a>
+        <a class="nav-login" href="https://hamawakiac.github.io/menu/">練習メニュー</a>
+      </nav>
     </div>
-  </div>
-  <div class="hero-image" role="img" aria-label="トラックを走る浜脇ACの選手たち"></div>
-  <div class="speed-lines" aria-hidden="true"></div>
-</section>
+  </header>
 
-<section class="features" id="about">
-  <article><div class="icon blue-bg">🔰</div><div><h2>初心者歓迎</h2><p>運動が苦手でも大丈夫。一人ひとりの成長を丁寧に支えます。</p></div></article>
-  <article><div class="icon green-bg">🧢</div><div><h2>専門コーチ指導</h2><p>基礎から専門種目まで、目的を明確にして指導します。</p></div></article>
-  <article><div class="icon yellow-bg">👥</div><div><h2>仲間と成長</h2><p>互いに励まし合い、挑戦する力と協力する力を育てます。</p></div></article>
-</section>
+  <main id="top">
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="hero-kicker">HAMAWAKI ATHLETIC CLUB</p>
+        <h1>速く、強く、<br />人として成長する。</h1>
+        <p class="hero-text">
+          浜脇ACは、中学生を中心に活動する陸上競技クラブです。<br class="desktop-only" />
+          一人ひとりの目標に合わせ、競技力と主体性を育てます。
+        </p>
+        <div class="hero-actions">
+          <a href="https://hamawakiac.github.io/menu/" class="button button-primary">練習メニューを見る</a>
+          <a href="#about" class="button button-secondary">クラブについて</a>
+        </div>
+      </div>
+      <div class="hero-badge">
+        <span>JAAF</span>
+        <strong>公認B級コーチ</strong>
+        <small>指導体制</small>
+      </div>
+    </section>
 
-<section class="content-grid" id="activity">
-  <article class="panel schedule">
-    <h2><span>▣</span> 活動スケジュール</h2>
-    <div class="time blue-outline"><b>月・水・金</b><strong>16:15–18:15</strong></div>
-    <div class="time green-outline"><b>土</b><strong>9:00–12:00</strong></div>
-    <small>※学校行事・大会日程などにより変更する場合があります。</small>
-  </article>
+    <section class="news-strip" aria-label="お知らせ">
+      <div class="section-inner news-inner">
+        <span class="news-label">NEWS</span>
+        <p><time datetime="2026-08-03">2026.08.03</time> 浜脇AC公式トップページを公開しました。</p>
+      </div>
+    </section>
 
-  <article class="panel">
-    <h2><span>🏃</span> 活動種目</h2>
-    <div class="sports">
-      <span class="s1">🏃 短距離</span><span class="s2">▥ ハードル</span>
-      <span class="s3">↗ 跳躍</span><span class="s4">🤾 投擲</span>
-      <span class="s5">🏃 長距離</span><span class="s6">🏋 補強・ドリル</span>
+    <section id="about" class="section about-section">
+      <div class="section-inner two-column">
+        <div>
+          <p class="section-label">ABOUT US</p>
+          <h2>競技力だけでなく、<br />自ら考えて行動できる選手へ。</h2>
+        </div>
+        <div class="about-copy">
+          <p>
+            浜脇ACでは、短距離・ハードル・跳躍・投てき・長距離など、各種目の専門性を大切にしながら、基礎体力、動きづくり、補強運動まで総合的に指導します。
+          </p>
+          <p>
+            練習の目的を理解し、自分の状態を確認しながら取り組むことを重視しています。競技を通して、継続する力、仲間と協力する力、挑戦する姿勢を育てます。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="activity" class="section activity-section">
+      <div class="section-inner">
+        <div class="section-heading">
+          <p class="section-label">ACTIVITY</p>
+          <h2>主な活動内容</h2>
+          <p>基礎から専門練習まで、成長段階に応じて取り組みます。</p>
+        </div>
+
+        <div class="activity-grid">
+          <article class="activity-card">
+            <div class="activity-number">01</div>
+            <h3>全体練習</h3>
+            <p>ウォーミングアップ、動きづくり、基礎走、補強運動を通して、競技の土台をつくります。</p>
+          </article>
+          <article class="activity-card">
+            <div class="activity-number">02</div>
+            <h3>専門種目練習</h3>
+            <p>短距離、ハードル、跳躍、投てき、長距離に分かれ、種目特性に応じた練習を行います。</p>
+          </article>
+          <article class="activity-card">
+            <div class="activity-number">03</div>
+            <h3>試合・記録会</h3>
+            <p>大会や記録会に参加し、目標設定、振り返り、次の課題設定までを一連の学びとします。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="schedule" class="section schedule-section">
+      <div class="section-inner schedule-layout">
+        <div class="schedule-intro">
+          <p class="section-label light">SCHEDULE</p>
+          <h2>活動時間</h2>
+          <p>学校行事や大会日程により、変更になる場合があります。</p>
+        </div>
+        <div class="schedule-card">
+          <div class="schedule-row">
+            <span>月曜日</span><strong>16:15–18:15</strong>
+          </div>
+          <div class="schedule-row">
+            <span>水曜日</span><strong>16:15–18:15</strong>
+          </div>
+          <div class="schedule-row">
+            <span>金曜日</span><strong>16:15–18:15</strong>
+          </div>
+          <div class="schedule-row">
+            <span>土曜日</span><strong>9:00–12:00</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section system-section">
+      <div class="section-inner system-box">
+        <div>
+          <p class="section-label">MEMBER SYSTEM</p>
+          <h2>練習メニュー管理システム</h2>
+          <p>当日の練習内容、週間予定、月間行事をオンラインで確認できます。</p>
+        </div>
+        <a href="https://hamawakiac.github.io/menu/" class="button button-primary">システムを開く</a>
+      </div>
+    </section>
+
+    <section id="contact" class="section contact-section">
+      <div class="section-inner contact-box">
+        <p class="section-label light">CONTACT</p>
+        <h2>お問い合わせ</h2>
+        <p>体験参加、練習内容、入会に関するお問い合わせは、担当コーチまでご連絡ください。</p>
+        <p class="contact-note">連絡先は運用に合わせて、この欄にメールアドレスやフォームURLを設定してください。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="section-inner footer-inner">
+      <div>
+        <p class="footer-brand">HAMAWAKI AC</p>
+        <p>浜脇アスレチッククラブ</p>
+      </div>
+      <p>© 2026 Hamawaki Athletic Club</p>
     </div>
-  </article>
+  </footer>
 
-  <article class="panel" id="news">
-    <div class="panel-head"><h2><span>📣</span> お知らせ</h2></div>
-    <ul class="news-list">
-      <li><time>2026.08.03</time><div><b>公式ホームページを公開しました</b><p>クラブ情報や練習メニューへの入口としてご利用ください。</p></div></li>
-      <li><time>随時更新</time><div><b>練習メニューを確認できます</b><p>当日の練習内容は専用ページから確認できます。</p></div></li>
-      <li><time>受付中</time><div><b>体験参加・お問い合わせ</b><p>参加方法は担当コーチまでお問い合わせください。</p></div></li>
-    </ul>
-  </article>
-</section>
-
-<section class="message">
-  <div><p class="eyebrow">OUR POLICY</p><h2>速く、強く、<br>人として成長する。</h2></div>
-  <p>浜脇ACでは、記録を伸ばすことだけでなく、練習の目的を考え、自分の状態を確認し、仲間と協力して行動できる選手を育てます。</p>
-</section>
-
-<section class="menu-cta">
-  <div><p class="eyebrow">TRAINING MENU</p><h2>今日の練習を確認しよう</h2><p>全体練習・専門種目練習・週間予定・月間行事を確認できます。</p></div>
-  <a class="btn blue" href="https://hamawakiac.github.io/menu/">練習メニューを開く →</a>
-</section>
-</main>
-
-<footer id="contact">
-  <div><h2>HAMAWAKI AC</h2><p>中学生のための陸上クラブ<br>兵庫県西宮市で活動しています</p></div>
-  <div><h3>お問い合わせ</h3><p>体験参加・入会については、担当コーチまでご連絡ください。</p></div>
-  <div class="footer-link"><a href="https://hamawakiac.github.io/menu/">練習メニュー ↗</a></div>
-  <small>© 2026 HAMAWAKI AC</small>
-</footer>
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
