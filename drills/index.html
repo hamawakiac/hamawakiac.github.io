@@ -86,9 +86,9 @@
 
     const groups = [
       { id: "basic", title: "基本ドリル" },
-      { id: "20m", title: "20mごとに動作変更", note: "動作を大きく" },
-      { id: "movement", title: "動き作り（7分）" },
+      { id: "sprint", title: "スプリントドリル" },
       { id: "start", title: "スタートドリル" },
+      { id: "unclassified", title: "未分類のドリル" },
       { id: "mon", title: "月曜日・120分" },
       { id: "wed", title: "水曜日・120分" },
       { id: "fri", title: "金曜日・120分" },
@@ -214,13 +214,27 @@
       } catch {
         status.textContent = "保存済みのデータを読み込めませんでした。";
       }
-      return Object.fromEntries(groups.map(({ id }) => {
+      function readList(id) {
         const list = saved?.[id];
         const valid = Array.isArray(list) && list.every(item =>
           typeof item?.name === "string" && typeof item.notes === "string"
         );
-        return [id, valid ? list : (initialItems[id] ?? []).map(([name, notes = ""]) => ({ name, notes }))];
-      }));
+        return valid ? list : (initialItems[id] ?? []).map(([name, notes = ""]) => ({ name, notes }));
+      }
+
+      const result = Object.fromEntries(groups.map(({ id }) => [id, readList(id)]));
+      if (!Array.isArray(saved?.unclassified)) {
+        result.unclassified = [
+          ...readList("basic"),
+          ...readList("20m").map(item => ({ ...item, notes: [item.notes, "動作を大きく"].filter(Boolean).join("\n") })),
+          ...readList("movement"),
+          ...readList("start")
+        ];
+        result.basic = [];
+        result.sprint = [];
+        result.start = [];
+      }
+      return result;
     }
 
     const items = loadItems();
@@ -382,19 +396,10 @@
       return list;
     }
 
-    const sprint = element("div");
-    const sprintTitle = element("h2", "スプリントドリル");
-    sprintTitle.id = "heading-sprint";
-    sprint.setAttribute("role", "region");
-    sprint.setAttribute("aria-labelledby", sprintTitle.id);
-    sprint.append(sprintTitle);
-
     for (const group of groups) {
-      const isSprint = group.id === "20m" || group.id === "movement";
-      if (group.id === "20m") container.append(sprint);
       if (group.id === "mon") container.append(element("h2", "冬季の曜日別メニュー"));
       const section = element("section");
-      const title = element(isSprint || ["mon", "wed", "fri", "sat"].includes(group.id) ? "h3" : "h2", group.title);
+      const title = element(["mon", "wed", "fri", "sat"].includes(group.id) ? "h3" : "h2", group.title);
       title.id = "heading-" + group.id;
       section.setAttribute("aria-labelledby", title.id);
       const heading = element("div", "", "section-title");
@@ -403,10 +408,9 @@
       const list = element("ol");
       const empty = element("p", "登録された項目はありません。", "empty");
       section.append(heading);
-      if (group.note) section.append(element("p", group.note, "notes"));
       section.append(list, empty);
       sections.set(group.id, { list, empty, add });
-      (isSprint ? sprint : container).append(section);
+      container.append(section);
       renderList(group);
     }
 
