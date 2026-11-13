@@ -54,7 +54,7 @@
   </header>
   <main>
     <div class="toolbar">
-      <button id="new-drill" type="button">＋ ドリルを新規作成</button>
+      <button id="new-drill" type="button">＋ ドリル種目を新規作成</button>
       <button id="save" class="primary" type="button">保存</button>
       <p id="status" role="status">変更はこのブラウザーに保存されます。</p>
     </div>
@@ -65,8 +65,8 @@
   <dialog id="editor" aria-labelledby="editor-title">
     <form id="edit-form">
       <h2 id="editor-title"></h2>
-      <label>項目名<input id="item-name" required maxlength="120" autofocus></label>
-      <label>内容・メモ<textarea id="item-notes" rows="5" maxlength="2000"></textarea></label>
+      <label>ドリル種目名<input id="item-name" required maxlength="120" autofocus></label>
+      <label>ドリルの説明<textarea id="item-notes" rows="5" maxlength="2000" placeholder="やり方、距離・回数、意識するポイントなど"></textarea></label>
       <div class="actions">
         <button class="primary" type="submit">反映</button>
         <button id="cancel-edit" type="button">キャンセル</button>
@@ -357,7 +357,7 @@
       title.id = "heading-" + group.id;
       section.setAttribute("aria-labelledby", title.id);
       const heading = element("div", "", "section-title");
-      const add = button("＋ 追加", () => openEditor(group), group.title + "に追加");
+      const add = button("＋ 種目を追加", () => openEditor(group), group.title + "に追加");
       heading.append(title, add);
       const list = element("ol");
       const empty = element("p", "登録された項目はありません。", "empty");
@@ -397,7 +397,7 @@
       event.preventDefault();
       const name = nameField.value.trim();
       if (!name) {
-        nameField.setCustomValidity("項目名を入力してください。");
+        nameField.setCustomValidity("ドリル種目名を入力してください。");
         nameField.reportValidity();
         return;
       }
