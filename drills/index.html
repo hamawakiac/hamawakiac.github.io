@@ -29,7 +29,7 @@
     .empty { margin: .6rem 0 0; color: #39534d; }
     .handle { cursor: grab; min-width: 2rem; text-align: center; padding: .65rem .25rem; color: #39534d; touch-action: none; user-select: none; -webkit-touch-callout: none; }
     li.moving { background: #e4f4e9; }
-    button, input, textarea { font: inherit; }
+    button, input, textarea, select { font: inherit; }
     button { cursor: pointer; color: #173c33; background: white; border: 1px solid #a5bbb0; border-radius: .4rem; padding: .42rem .7rem; min-height: 2.5rem; }
     button:disabled { cursor: default; opacity: .55; }
     button.primary { color: #fff; background: #086146; border-color: #086146; }
@@ -39,7 +39,8 @@
     dialog::backdrop { background: #122b27a0; }
     dialog h2 { margin: 0 0 1rem; }
     label { display: block; margin-bottom: .9rem; }
-    input, textarea { display: block; width: 100%; padding: .5rem; border: 1px solid #8aada0; border-radius: .35rem; }
+    input, textarea, select { display: block; width: 100%; padding: .5rem; border: 1px solid #8aada0; border-radius: .35rem; }
+    #item-group-label[hidden] { display: none; }
     textarea { resize: vertical; }
     @media (max-width: 38rem) {
       li { grid-template-columns: auto minmax(0, 1fr); }
@@ -66,6 +67,7 @@
   <dialog id="editor" aria-labelledby="editor-title">
     <form id="edit-form">
       <h2 id="editor-title"></h2>
+      <label id="item-group-label" hidden>登録先の分類<select id="item-group"></select></label>
       <label>ドリル種目名<input id="item-name" required maxlength="120" autofocus></label>
       <label>ドリルの説明<textarea id="item-notes" rows="5" maxlength="2000" placeholder="やり方、距離・回数、意識するポイントなど"></textarea></label>
       <label>種類・区分<textarea id="item-category" rows="1"></textarea></label>
@@ -364,10 +366,24 @@
       status.textContent = "未保存の変更があります。";
     }
 
+    const newDrillButton = document.getElementById("new-drill");
+    const itemGroup = document.getElementById("item-group");
+    const itemGroupLabel = document.getElementById("item-group-label");
+
     function openEditor(group, index) {
+      const adding = index === undefined;
+      itemGroupLabel.hidden = !adding;
+      if (adding) {
+        itemGroup.replaceChildren(...groups.map(({ id, title }) => {
+          const option = element("option", title);
+          option.value = id;
+          return option;
+        }));
+        itemGroup.value = group.id;
+      }
       editTarget = { group, index };
       const item = items[group.id][index];
-      document.getElementById("editor-title").textContent = group.title + (item ? "の項目を編集" : "に項目を追加");
+      document.getElementById("editor-title").textContent = item ? group.title + "の項目を編集" : "ドリル種目を追加";
       nameField.value = item?.name ?? "";
       notesField.value = item?.notes ?? "";
       for (const [key, input] of detailInputs) input.value = item?.[key] ?? "";
@@ -542,13 +558,13 @@
       title.id = "heading-" + group.id;
       section.setAttribute("aria-labelledby", title.id);
       const heading = element("div", "", "section-title");
-      const add = button("＋ 種目を追加", () => openEditor(group), group.title + "に追加");
-      heading.append(title, add);
+      title.tabIndex = -1;
+      heading.append(title);
       const list = element("ol");
       const empty = element("p", "登録された項目はありません。", "empty");
       section.append(heading);
       section.append(list, empty);
-      sections.set(group.id, { group, list, empty, add });
+      sections.set(group.id, { group, list, empty, title });
       container.append(section);
       renderList(group);
     }
@@ -580,7 +596,7 @@
       renderGroup(group);
       groupEditor.close();
       markChanged();
-      sections.get(group.id).add.focus();
+      sections.get(group.id).title.focus();
     });
 
     container.addEventListener("dragover", event => {
@@ -604,7 +620,7 @@
       move(group, index, target.index, undefined, target.group);
     });
 
-    document.getElementById("new-drill").addEventListener("click", () => openEditor(groups.find(group => group.id === "unclassified")));
+    newDrillButton.addEventListener("click", () => openEditor(groups.find(group => group.id === "unclassified")));
 
     nameField.addEventListener("input", () => nameField.setCustomValidity(""));
     document.getElementById("cancel-edit").addEventListener("click", () => editor.close());
@@ -616,7 +632,8 @@
         nameField.reportValidity();
         return;
       }
-      const { group, index } = editTarget;
+      const { index } = editTarget;
+      const group = index === undefined ? groups.find(({ id }) => id === itemGroup.value) : editTarget.group;
       const target = index ?? items[group.id].length;
       const details = Object.fromEntries(detailInputs.map(([key, input]) => [key, input.value]));
       items[group.id][target] = { ...items[group.id][target], ...details, name, notes: notesField.value };
@@ -631,7 +648,7 @@
       items[group.id].splice(index, 1);
       markChanged();
       renderList(group);
-      sections.get(group.id).add.focus();
+      sections.get(group.id).title.focus();
     });
 
     save.addEventListener("click", () => {
