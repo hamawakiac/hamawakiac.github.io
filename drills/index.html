@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ドリル管理 | 浜脇AC</title>
+  <style>
+    :root { color-scheme: light; font-family: "Atkinson Hyperlegible Next", system-ui, sans-serif; color: #152d2a; background: #f3f6f2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { background: #123b33; color: white; padding: 2rem max(1rem, calc((100% - 60rem) / 2)); }
+    header a { color: #c7f0d7; }
+    h1 { margin: .55rem 0 0; font-size: clamp(1.9rem, 5vw, 3rem); }
+    main { max-width: 62rem; margin: auto; padding: 1rem; }
+    h2 { margin-top: 1.6rem; }
+    .section-title h2, h3, ol { margin: 0; }
+    .toolbar, .section-title, .actions { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .toolbar { position: sticky; top: 0; z-index: 1; background: #f3f6f2; padding: .65rem 0; }
+    .toolbar p { margin: 0; font-size: .9rem; }
+    .section-title { justify-content: space-between; }
+    section { background: #fff; border: 1px solid #d3e0d9; border-radius: .75rem; padding: 1rem; margin-bottom: .75rem; }
+    ol { padding: 0; list-style: none; }
+    li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .65rem; padding: .65rem 0; border-top: 1px solid #d3e0d9; }
+    li:first-child { margin-top: .75rem; }
+    li.drop-target { box-shadow: inset 0 3px #08724d; }
+    .item-name, .notes { overflow-wrap: anywhere; }
+    .notes { margin: .2rem 0 0; white-space: pre-wrap; color: #39534d; }
+    .empty { margin: .6rem 0 0; color: #39534d; }
+    .handle { cursor: grab; min-width: 2rem; text-align: center; padding: .65rem .25rem; color: #39534d; touch-action: none; user-select: none; -webkit-touch-callout: none; }
+    li.moving { background: #e4f4e9; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; color: #173c33; background: white; border: 1px solid #a5bbb0; border-radius: .4rem; padding: .42rem .7rem; min-height: 2.5rem; }
+    button:disabled { cursor: default; opacity: .55; }
+    button.primary { color: #fff; background: #086146; border-color: #086146; }
+    button.danger { color: #91291e; }
+    :focus-visible { outline: 3px solid #036bc4; outline-offset: 2px; }
+    dialog { width: min(31rem, calc(100% - 2rem)); border: 1px solid #a5bbb0; border-radius: .75rem; padding: 1.25rem; }
+    dialog::backdrop { background: #122b27a0; }
+    dialog h2 { margin: 0 0 1rem; }
+    label { display: block; margin-bottom: .9rem; }
+    input, textarea { display: block; width: 100%; padding: .5rem; border: 1px solid #8aada0; border-radius: .35rem; }
+    textarea { resize: vertical; }
+    @media (max-width: 38rem) {
+      li { grid-template-columns: auto minmax(0, 1fr); }
+      li .actions { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../">浜脇AC</a>
+    <h1>ドリル管理</h1>
+  </header>
+  <main>
+    <div class="toolbar">
+      <button id="save" class="primary" type="button">保存</button>
+      <p id="status" role="status">変更はこのブラウザーに保存されます。</p>
+    </div>
+    <p>項目の左端をドラッグすると、同じ欄の中で順序を変更できます。スマートフォンでは左端を長押しして移動するか、上下の矢印を使います。</p>
+    <noscript>ドリル管理を使うには JavaScript を有効にしてください。</noscript>
+    <div id="groups"></div>
+  </main>
+  <dialog id="editor" aria-labelledby="editor-title">
+    <form id="edit-form">
+      <h2 id="editor-title"></h2>
+      <label>項目名<input id="item-name" required maxlength="120" autofocus></label>
+      <label>内容・メモ<textarea id="item-notes" rows="5" maxlength="2000"></textarea></label>
+      <div class="actions">
+        <button class="primary" type="submit">反映</button>
+        <button id="cancel-edit" type="button">キャンセル</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="remove-dialog" aria-labelledby="remove-title">
+    <form method="dialog">
+      <h2 id="remove-title">項目を削除</h2>
+      <p id="remove-description"></p>
+      <div class="actions">
+        <button value="cancel" autofocus>キャンセル</button>
+        <button class="danger" value="delete">削除する</button>
+      </div>
+    </form>
+  </dialog>
+  <script>
+    "use strict";
+
+    const groups = [
+      { id: "basic", title: "基本ドリル" },
+      { id: "20m", title: "20mごとに動作変更", note: "動作を大きく" },
+      { id: "movement", title: "動き作り（7分）" },
+      { id: "mon", title: "月曜日・120分" },
+      { id: "wed", title: "水曜日・120分" },
+      { id: "fri", title: "金曜日・120分" },
+      { id: "sat", title: "土曜日・180分" },
+      { id: "policy", title: "冬季の強化方針" },
+      { id: "phases", title: "冬季の進行" }
+    ];
+    const initialItems = {
+      basic: [
+        ["直立でその場で跳ねてから同じリズムで走る"],
+        ["高速腿上げ"],
+        ["メディシンボール走"],
+        ["腕無し走"],
+        ["丸太ドリル"]
+      ],
+      "20m": [
+        ["肩関節回し"],
+        ["ヒップロック1"],
+        ["右肩関節"],
+        ["左肩関節"],
+        ["ランジ肩関節"],
+        ["ヒップロック2"],
+        ["上体バランス体重移動"],
+        ["体重移動走"],
+        ["ランジ腕回し"],
+        ["接地"],
+        ["腕回し"],
+        ["ランジ脇腹伸ばし"]
+      ],
+      movement: [
+        ["腕回しスキップ40m"],
+        ["バックスキップ40m"],
+        ["腕回しサイドスキップ40m"],
+        ["クロススキップ40m"],
+        ["股関節回し前20m歩→20mスキップ"],
+        ["股関節回し後20m歩→20mスキップ"],
+        ["空中切り替え10mウォークバック×2"],
+        ["Aスキップ10mウォークバック×2"],
+        ["Bスキップ20mウォークバック×2"],
+        ["Cスキップ20mウォークバック×2"],
+        ["流し60m×1"]
+      ],
+      mon: [
+        ["ウォームアップ", "0～15分"],
+        ["基本ドリル", "15～40分"],
+        ["流し・加速走・フォーム", "40～60分"],
+        ["短距離100m×6～8本（65～75％）／長距離イージーラン20～25分", "60～90分"],
+        ["サーキット", "90～110分"],
+        ["クールダウン", "110～120分"]
+      ],
+      wed: [
+        ["ウォームアップ", "0～15分"],
+        ["リズム・接地ドリル", "15～35分"],
+        ["流し", "35～45分"],
+        ["短距離150m×5～6本（70～80％）／長距離閾値走15～20分", "45～90分"],
+        ["筋持久力", "90～110分"],
+        ["クールダウン", "110～120分"]
+      ],
+      fri: [
+        ["ウォームアップ", "0～20分"],
+        ["ドリル", "20～40分"],
+        ["低強度ジャンプ・ミニハードル", "40～60分"],
+        ["短距離30～60m×4～6本／長距離60～100m流し×4～6本＋フォーム", "60～90分"],
+        ["専門種目の技術練習", "90～110分"],
+        ["クールダウン", "110～120分"]
+      ],
+      sat: [
+        ["ウォームアップ", "0～20分"],
+        ["総合ドリル", "20～50分"],
+        ["バネ・敏捷性", "50～75分"],
+        ["短距離120～200m反復／長距離イージーラン30～45分", "75～120分"],
+        ["専門種目の技術練習", "120～150分"],
+        ["筋力トレーニング", "150～170分"],
+        ["クールダウン", "170～180分"]
+      ],
+      policy: [
+        ["基礎体力"],
+        ["走動作・ドリル"],
+        ["短距離と長距離の持久力強化"],
+        ["バネ・プライオメトリクス"],
+        ["専門種目の技術"],
+        ["スパイクを使用しない練習"]
+      ],
+      phases: [
+        ["基礎構築", "11～12月"],
+        ["強化", "1～2月"],
+        ["試合期への移行", "3月"]
+      ]
+    };
+    const storageKey = "hamawakiac.drills.v1";
+    const container = document.getElementById("groups");
+    const status = document.getElementById("status");
+    const save = document.getElementById("save");
+    const editor = document.getElementById("editor");
+    const nameField = document.getElementById("item-name");
+    const notesField = document.getElementById("item-notes");
+    const removeDialog = document.getElementById("remove-dialog");
+    const sections = new Map();
+    let changed = false;
+    let editTarget;
+    let removeTarget;
+    let dragSource;
+
+    function element(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+
+    function button(label, action, accessibleLabel) {
+      const node = element("button", label);
+      node.type = "button";
+      if (accessibleLabel) node.setAttribute("aria-label", accessibleLabel);
+      node.addEventListener("click", action);
+      return node;
+    }
+
+    function loadItems() {
+      let saved;
+      try {
+        saved = JSON.parse(localStorage.getItem(storageKey));
+      } catch {
+        status.textContent = "保存済みのデータを読み込めませんでした。";
+      }
+      return Object.fromEntries(groups.map(({ id }) => {
+        const list = saved?.[id];
+        const valid = Array.isArray(list) && list.every(item =>
+          typeof item?.name === "string" && typeof item.notes === "string"
+        );
+        return [id, valid ? list : (initialItems[id] ?? []).map(([name, notes = ""]) => ({ name, notes }))];
+      }));
+    }
+
+    const items = loadItems();
+
+    function markChanged() {
+      changed = true;
+      status.textContent = "未保存の変更があります。";
+    }
+
+    function openEditor(group, index) {
+      editTarget = { group, index };
+      const item = items[group.id][index];
+      document.getElementById("editor-title").textContent = group.title + (item ? "の項目を編集" : "に項目を追加");
+      nameField.value = item?.name ?? "";
+      notesField.value = item?.notes ?? "";
+      nameField.setCustomValidity("");
+      editor.showModal();
+    }
+
+    function move(group, from, to, focusAction) {
+      if (from === to) return;
+      const list = items[group.id];
+      const [item] = list.splice(from, 1);
+      list.splice(to, 0, item);
+      markChanged();
+      const rows = renderList(group);
+      if (focusAction) {
+        const row = rows.children[to];
+        const control = row.querySelector('[data-action="' + focusAction + '"]');
+        (control.disabled ? row.querySelector('[data-action="edit"]') : control).focus();
+      }
+    }
+
+    function enableTouchMove(handle, row, list, group, index) {
+      let gesture;
+
+      function highlight(x, y) {
+        gesture.target?.classList.remove("drop-target");
+        const candidate = document.elementFromPoint(x, y)?.closest("li");
+        gesture.target = candidate?.parentElement === list ? candidate : null;
+        if (gesture.target !== row) gesture.target?.classList.add("drop-target");
+      }
+
+      function scrollNearEdge() {
+        const { x, y } = gesture;
+        const edge = 76;
+        const step = y < edge ? -10 : y > window.innerHeight - edge ? 10 : 0;
+        if (step) {
+          window.scrollBy(0, step);
+          highlight(x, y);
+        }
+        gesture.frame = requestAnimationFrame(scrollNearEdge);
+      }
+
+      function finish(event) {
+        if (gesture?.id !== event.pointerId) return;
+        clearTimeout(gesture.timer);
+        cancelAnimationFrame(gesture.frame);
+        row.classList.remove("moving");
+        gesture.target?.classList.remove("drop-target");
+        const target = gesture.active && event.type === "pointerup" ? gesture.target : null;
+        gesture = undefined;
+        handle.draggable = true;
+        if (target) move(group, index, Array.from(list.children).indexOf(target));
+      }
+
+      handle.addEventListener("pointerdown", event => {
+        if (event.pointerType !== "touch" || !event.isPrimary) return;
+        const { pointerId: id, clientX: x, clientY: y } = event;
+        handle.draggable = false;
+        handle.setPointerCapture(id);
+        gesture = { id, x, y, active: false };
+        gesture.timer = setTimeout(() => {
+          gesture.active = true;
+          row.classList.add("moving");
+          highlight(gesture.x, gesture.y);
+          gesture.frame = requestAnimationFrame(scrollNearEdge);
+        }, 350);
+      });
+      handle.addEventListener("pointermove", event => {
+        if (gesture?.id !== event.pointerId) return;
+        const { clientX: x, clientY: y } = event;
+        if (!gesture.active) {
+          if (Math.hypot(x - gesture.x, y - gesture.y) > 10) finish(event);
+          return;
+        }
+        gesture.x = x;
+        gesture.y = y;
+        highlight(x, y);
+      });
+      for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
+        handle.addEventListener(type, finish);
+      }
+      handle.addEventListener("contextmenu", event => event.preventDefault());
+    }
+
+    function renderList(group) {
+      const { list, empty } = sections.get(group.id);
+      const entries = items[group.id];
+      empty.hidden = entries.length > 0;
+      list.replaceChildren(...entries.map(({ name, notes }, index) => {
+        const row = element("li");
+        const handle = element("span", "⠿", "handle");
+        handle.setAttribute("aria-hidden", "true");
+        handle.draggable = true;
+        enableTouchMove(handle, row, list, group, index);
+        handle.addEventListener("dragstart", event => {
+          if (row.classList.contains("moving")) {
+            event.preventDefault();
+            return;
+          }
+          dragSource = { group, index };
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", name);
+        });
+        handle.addEventListener("dragend", () => {
+          dragSource = undefined;
+          list.querySelector(".drop-target")?.classList.remove("drop-target");
+        });
+        row.addEventListener("dragover", event => {
+          if (dragSource?.group !== group || dragSource.index === index) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+          row.classList.add("drop-target");
+        });
+        row.addEventListener("dragleave", event => {
+          if (!row.contains(event.relatedTarget)) row.classList.remove("drop-target");
+        });
+        row.addEventListener("drop", event => {
+          row.classList.remove("drop-target");
+          if (dragSource?.group !== group) return;
+          event.preventDefault();
+          move(group, dragSource.index, index);
+          dragSource = undefined;
+        });
+
+        const description = element("div");
+        description.append(element("strong", name, "item-name"));
+        if (notes) description.append(element("p", notes, "notes"));
+        const actions = element("div", "", "actions");
+        const up = button("↑", () => move(group, index, index - 1, "up"), name + "を上へ");
+        const down = button("↓", () => move(group, index, index + 1, "down"), name + "を下へ");
+        up.dataset.action = "up";
+        down.dataset.action = "down";
+        up.disabled = index === 0;
+        down.disabled = index === entries.length - 1;
+        const edit = button("編集", () => openEditor(group, index), name + "を編集");
+        edit.dataset.action = "edit";
+        const remove = button("削除", () => {
+          removeTarget = { group, index };
+          removeDialog.returnValue = "cancel";
+          document.getElementById("remove-description").textContent = "「" + name + "」を削除しますか？";
+          removeDialog.showModal();
+        }, name + "を削除");
+        actions.append(up, down, edit, remove);
+        row.append(handle, description, actions);
+        return row;
+      }));
+      return list;
+    }
+
+    for (const group of groups) {
+      if (group.id === "mon") container.append(element("h2", "冬季の曜日別メニュー"));
+      const section = element("section");
+      const title = element(["mon", "wed", "fri", "sat"].includes(group.id) ? "h3" : "h2", group.title);
+      title.id = "heading-" + group.id;
+      section.setAttribute("aria-labelledby", title.id);
+      const heading = element("div", "", "section-title");
+      const add = button("＋ 追加", () => openEditor(group), group.title + "に追加");
+      heading.append(title, add);
+      const list = element("ol");
+      const empty = element("p", "登録された項目はありません。", "empty");
+      section.append(heading);
+      if (group.note) section.append(element("p", group.note, "notes"));
+      section.append(list, empty);
+      sections.set(group.id, { list, empty, add });
+      container.append(section);
+      renderList(group);
+    }
+
+    nameField.addEventListener("input", () => nameField.setCustomValidity(""));
+    document.getElementById("cancel-edit").addEventListener("click", () => editor.close());
+    document.getElementById("edit-form").addEventListener("submit", event => {
+      event.preventDefault();
+      const name = nameField.value.trim();
+      if (!name) {
+        nameField.setCustomValidity("項目名を入力してください。");
+        nameField.reportValidity();
+        return;
+      }
+      const { group, index } = editTarget;
+      const target = index ?? items[group.id].length;
+      items[group.id][target] = { name, notes: notesField.value.trim() };
+      editor.close();
+      markChanged();
+      renderList(group).children[target].querySelector('[data-action="edit"]').focus();
+    });
+
+    removeDialog.addEventListener("close", () => {
+      if (removeDialog.returnValue !== "delete") return;
+      const { group, index } = removeTarget;
+      items[group.id].splice(index, 1);
+      markChanged();
+      renderList(group);
+      sections.get(group.id).add.focus();
+    });
+
+    save.addEventListener("click", () => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(items));
+        changed = false;
+        status.textContent = "このブラウザーに保存しました。";
+      } catch {
+        status.textContent = "保存できませんでした。ブラウザーの保存設定を確認してください。";
+      }
+    });
+
+    window.addEventListener("beforeunload", event => {
+      if (!changed) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+  </script>
+</body>
+</html>
