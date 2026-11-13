@@ -271,6 +271,20 @@
           existing.push(drill);
         }
       }
+      if (savedData._t2DrillAdded !== true) {
+        const name = "T2ダイナミックストレッチ";
+        const matches = item => normalizedText(item.name) === normalizedText(name);
+        if (!result.basic.some(matches)) {
+          const source = groups.find(({ id }) => id !== "basic" && result[id].some(matches));
+          if (source) {
+            const list = result[source.id];
+            const [item] = list.splice(list.findIndex(matches), 1);
+            result.basic.push(item);
+          } else {
+            result.basic.push({ name, notes: "" });
+          }
+        }
+      }
       return result;
     }
 
@@ -563,7 +577,7 @@
         }
         const customGroups = groups.filter(group => group.id.startsWith("custom-"));
         const nextSnapshot = JSON.stringify({
-          ...savedData, ...items, [migrationKey]: true, [customGroupsKey]: customGroups
+          ...savedData, ...items, [migrationKey]: true, [customGroupsKey]: customGroups, _t2DrillAdded: true
         });
         localStorage.setItem(storageKey, nextSnapshot);
         storedSnapshot = nextSnapshot;
