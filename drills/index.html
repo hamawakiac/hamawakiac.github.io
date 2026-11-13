@@ -53,6 +53,7 @@
   </header>
   <main>
     <div class="toolbar">
+      <button id="new-drill" type="button">＋ ドリルを新規作成</button>
       <button id="save" class="primary" type="button">保存</button>
       <p id="status" role="status">変更はこのブラウザーに保存されます。</p>
     </div>
@@ -88,13 +89,7 @@
       { id: "basic", title: "基本ドリル" },
       { id: "sprint", title: "スプリントドリル" },
       { id: "start", title: "スタートドリル" },
-      { id: "unclassified", title: "未分類のドリル" },
-      { id: "mon", title: "月曜日・120分" },
-      { id: "wed", title: "水曜日・120分" },
-      { id: "fri", title: "金曜日・120分" },
-      { id: "sat", title: "土曜日・180分" },
-      { id: "policy", title: "冬季の強化方針" },
-      { id: "phases", title: "冬季の進行" }
+      { id: "unclassified", title: "未分類のドリル" }
     ];
     const initialItems = {
       basic: [
@@ -130,52 +125,6 @@
         ["Bスキップ20mウォークバック×2"],
         ["Cスキップ20mウォークバック×2"],
         ["流し60m×1"]
-      ],
-      mon: [
-        ["ウォームアップ", "0～15分"],
-        ["基本ドリル", "15～40分"],
-        ["流し・加速走・フォーム", "40～60分"],
-        ["短距離100m×6～8本（65～75％）／長距離イージーラン20～25分", "60～90分"],
-        ["サーキット", "90～110分"],
-        ["クールダウン", "110～120分"]
-      ],
-      wed: [
-        ["ウォームアップ", "0～15分"],
-        ["リズム・接地ドリル", "15～35分"],
-        ["流し", "35～45分"],
-        ["短距離150m×5～6本（70～80％）／長距離閾値走15～20分", "45～90分"],
-        ["筋持久力", "90～110分"],
-        ["クールダウン", "110～120分"]
-      ],
-      fri: [
-        ["ウォームアップ", "0～20分"],
-        ["ドリル", "20～40分"],
-        ["低強度ジャンプ・ミニハードル", "40～60分"],
-        ["短距離30～60m×4～6本／長距離60～100m流し×4～6本＋フォーム", "60～90分"],
-        ["専門種目の技術練習", "90～110分"],
-        ["クールダウン", "110～120分"]
-      ],
-      sat: [
-        ["ウォームアップ", "0～20分"],
-        ["総合ドリル", "20～50分"],
-        ["バネ・敏捷性", "50～75分"],
-        ["短距離120～200m反復／長距離イージーラン30～45分", "75～120分"],
-        ["専門種目の技術練習", "120～150分"],
-        ["筋力トレーニング", "150～170分"],
-        ["クールダウン", "170～180分"]
-      ],
-      policy: [
-        ["基礎体力"],
-        ["走動作・ドリル"],
-        ["短距離と長距離の持久力強化"],
-        ["バネ・プライオメトリクス"],
-        ["専門種目の技術"],
-        ["スパイクを使用しない練習"]
-      ],
-      phases: [
-        ["基礎構築", "11～12月"],
-        ["強化", "1～2月"],
-        ["試合期への移行", "3月"]
       ]
     };
     const storageKey = "hamawakiac.drills.v1";
@@ -397,9 +346,8 @@
     }
 
     for (const group of groups) {
-      if (group.id === "mon") container.append(element("h2", "冬季の曜日別メニュー"));
       const section = element("section");
-      const title = element(["mon", "wed", "fri", "sat"].includes(group.id) ? "h3" : "h2", group.title);
+      const title = element("h2", group.title);
       title.id = "heading-" + group.id;
       section.setAttribute("aria-labelledby", title.id);
       const heading = element("div", "", "section-title");
@@ -413,6 +361,8 @@
       container.append(section);
       renderList(group);
     }
+
+    document.getElementById("new-drill").addEventListener("click", () => openEditor(groups.find(group => group.id === "unclassified")));
 
     nameField.addEventListener("input", () => nameField.setCustomValidity(""));
     document.getElementById("cancel-edit").addEventListener("click", () => editor.close());
