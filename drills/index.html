@@ -518,7 +518,17 @@
           document.getElementById("remove-description").textContent = "「" + name + "」を削除しますか？";
           removeDialog.showModal();
         }, name + "を削除");
-        actions.append(up, down, edit, remove);
+        const addToMenu = button("メニューに追加", () => {
+          const { name, notes, sets, intensity, rest, duration, target, caution } = item;
+          const menu = { name, detail: notes, sets, intensity, rest, duration, target, caution };
+          try {
+            sessionStorage.setItem("hamawakiac.pendingDrillMenu", JSON.stringify(menu));
+            window.location.href = "../menu/#drill-import";
+          } catch {
+            status.textContent = "練習メニューに渡せませんでした。ブラウザーの保存設定を確認してください。";
+          }
+        }, name + "を練習メニューに追加");
+        actions.append(up, down, edit, addToMenu, remove);
         row.append(handle, description, actions);
         return row;
       }));
