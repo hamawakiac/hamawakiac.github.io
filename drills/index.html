@@ -285,7 +285,33 @@
           }
         }
       }
+      if (savedData._basic20mDrillsAdded !== true) {
+        addBasic20mDrills(result);
+      }
       return result;
+    }
+
+    function addBasic20mDrills(result) {
+      const basic = result.basic;
+      const otherGroups = groups.filter(({ id }) => id !== "basic");
+      const instruction = "20mごとに動作を変える";
+      const caution = "動作を大きく";
+
+      for (const [name] of initialItems["20m"]) {
+        const matches = item => normalizedText(item.name) === normalizedText(name);
+        const source = [basic, ...otherGroups.map(({ id }) => result[id])].find(list => list.some(matches));
+        const item = source ? source.splice(source.findIndex(matches), 1)[0] : { name, notes: "" };
+        basic.push({
+          ...item,
+          notes: addInstruction(item.notes, instruction),
+          caution: addInstruction(item.caution, caution)
+        });
+      }
+    }
+
+    function addInstruction(value, instruction) {
+      if (String(value ?? "").split("\n").some(line => normalizedText(line) === normalizedText(instruction))) return value;
+      return [value, instruction].filter(Boolean).join("\n");
     }
 
     function drillContent(item) {
@@ -577,7 +603,7 @@
         }
         const customGroups = groups.filter(group => group.id.startsWith("custom-"));
         const nextSnapshot = JSON.stringify({
-          ...savedData, ...items, [migrationKey]: true, [customGroupsKey]: customGroups, _t2DrillAdded: true
+          ...savedData, ...items, [migrationKey]: true, [customGroupsKey]: customGroups, _t2DrillAdded: true, _basic20mDrillsAdded: true
         });
         localStorage.setItem(storageKey, nextSnapshot);
         storedSnapshot = nextSnapshot;
