@@ -67,6 +67,13 @@
       <h2 id="editor-title"></h2>
       <label>ドリル種目名<input id="item-name" required maxlength="120" autofocus></label>
       <label>ドリルの説明<textarea id="item-notes" rows="5" maxlength="2000" placeholder="やり方、距離・回数、意識するポイントなど"></textarea></label>
+      <label>種類・区分<textarea id="item-category" rows="1"></textarea></label>
+      <label>セット・本数<textarea id="item-sets" rows="1"></textarea></label>
+      <label>強度<textarea id="item-intensity" rows="1"></textarea></label>
+      <label>レスト<textarea id="item-rest" rows="1"></textarea></label>
+      <label>所要時間<textarea id="item-duration" rows="1"></textarea></label>
+      <label>対象<textarea id="item-target" rows="1"></textarea></label>
+      <label>注意点<textarea id="item-caution" rows="1"></textarea></label>
       <div class="actions">
         <button class="primary" type="submit">反映</button>
         <button id="cancel-edit" type="button">キャンセル</button>
@@ -128,6 +135,39 @@
         ["流し60m×1"]
       ]
     };
+    // Source: hamawakiac/menu, STARTER_MENUS at b704ae38.
+    const importedDrills = [
+      {"group":"unclassified","masterId":"overall-running-drills","name":"共通ランニングドリル","notes":"Aスキップ、Bスキップ、腿上げ、バウンディング、快調走60m×2。","category":"全体メニュー（前半）","sets":"各20m×2","intensity":"中","rest":"歩いて戻る","duration":"15分","target":"全員","caution":"速さより姿勢と接地を優先"},
+      {"group":"unclassified","masterId":"hurdle-mobility","name":"ハードルモビリティ","notes":"またぎ、抜き足、リード脚、横向きドリルを低いハードルで行う。","category":"ハードルメニュー","sets":"各6台×2","intensity":"低〜中","rest":"歩いて戻る","duration":"25分","target":"ハードル","caution":"骨盤が流れないようにする"},
+      {"group":"unclassified","masterId":"hurdle-approach-3","name":"1台目アプローチ練習","notes":"スタートから1台目までを反復し、歩数と踏切位置を安定させる。","category":"ハードルメニュー","sets":"5〜7本","intensity":"90〜95％","rest":"4分","duration":"35分","target":"100mH・110mH","caution":"ハードル高は発達段階に合わせる"},
+      {"group":"unclassified","masterId":"hurdle-5","name":"5台リズム走","notes":"5台を一定リズムで走り、抜き足後の接地をそろえる。","category":"ハードルメニュー","sets":"4〜6本","intensity":"85〜95％","rest":"5〜6分","duration":"45分","target":"ハードル","caution":"台間を無理に合わせず個別調整"},
+      {"group":"unclassified","masterId":"xlsx-hurdle-mobility","name":"ハードルドリル（股関節可動域）","notes":"またぎ越し、サイドステップ等ハードルを使った可動域改善ドリル。","category":"ハードルメニュー","sets":"各8〜10回×2セット","intensity":"低〜中","rest":"種目間30秒","duration":"15分","target":"ハードルパート","caution":"股関節の柔軟性・可動域向上が目的。無理に高いハードルを使用しない。"},
+      {"group":"unclassified","masterId":"xlsx-hurdle-3-5","name":"3歩・5歩間ハードル","notes":"インターバルを短めに設定し、3歩または5歩のリズムで走り抜ける。","category":"ハードルメニュー","sets":"5〜6本","intensity":"中〜高（80〜90％）","rest":"90秒〜2分","duration":"25分","target":"ハードルパート","caution":"リズム習得を最優先し、ハードル間隔は身長・技術レベルに応じて調整する。"},
+      {"group":"unclassified","masterId":"xlsx-hurdle-interval","name":"インターバルハードル","notes":"正規または短縮したインターバルで3〜5台のハードルを走り越える。","category":"ハードルメニュー","sets":"4〜5本","intensity":"高（85〜95％）","rest":"3分","duration":"30分","target":"ハードルパート（経験者中心）","caution":"抜き脚・リード脚のフォームを重視。疲労によるフォーム崩れに注意する。"},
+      {"group":"unclassified","masterId":"jump-approach","name":"助走リズム確認","notes":"チェックマークを用いて助走の前半・後半リズムを確認する。","category":"跳躍メニュー","sets":"6〜10本","intensity":"75〜90％","rest":"2〜3分","duration":"35分","target":"跳躍","caution":"全助走だけに偏らない"},
+      {"group":"unclassified","masterId":"jump-short","name":"短助走跳躍","notes":"6〜10歩助走から踏切姿勢と空中動作を確認。走幅跳・走高跳で内容を分ける。","category":"跳躍メニュー","sets":"6〜8本","intensity":"85〜90％","rest":"3〜4分","duration":"40分","target":"跳躍","caution":"着地場所とマット周辺を常時確認"},
+      {"group":"unclassified","masterId":"xlsx-jump-approach","name":"助走マーク合わせ","notes":"走り幅跳び・走り高跳びの助走リズムを確認し、マークを調整する。","category":"跳躍メニュー","sets":"6〜8本","intensity":"中（70〜85％）","rest":"90秒","duration":"20分","target":"跳躍パート","caution":"助走の再現性向上が目的。風向き・風速も考慮して調整する。"},
+      {"group":"unclassified","masterId":"xlsx-jump-takeoff","name":"踏切練習","notes":"短助走からの踏切動作反復（片脚踏切、連続バウンディング等）。","category":"跳躍メニュー","sets":"各8〜10回×2〜3セット","intensity":"中〜高","rest":"60秒","duration":"20分","target":"跳躍パート","caution":"着地時の膝への負担に注意。シューズと砂場の状態を事前に確認する。"},
+      {"group":"unclassified","masterId":"xlsx-jump-special","name":"専門ドリル（走り幅跳び／走り高跳び）","notes":"はさみ跳び・そり跳び（走高）、空中動作・着地（走幅）等の種目別技術ドリル。","category":"跳躍メニュー","sets":"各6〜8回×2セット","intensity":"中","rest":"60〜90秒","duration":"25分","target":"跳躍パート（種目別）","caution":"個人の技術課題に応じて内容を変える。マット・砂場の安全確認を徹底する。"},
+      {"group":"unclassified","masterId":"throw-standing","name":"立ち投げ技術","notes":"助走を使わず、下半身から上半身への力の伝達を確認。","category":"投擲メニュー","sets":"8〜12投","intensity":"75〜85％","rest":"2分","duration":"35分","target":"投擲","caution":"器具別に安全エリアを分ける"},
+      {"group":"unclassified","masterId":"throw-partial","name":"分習投げ","notes":"砲丸・円盤・やりの動作を局面別に分け、課題部分を反復する。","category":"投擲メニュー","sets":"各局面6〜8回","intensity":"中","rest":"適宜","duration":"40分","target":"投擲","caution":"同時投擲を避ける"},
+      {"group":"unclassified","masterId":"xlsx-throw-basic","name":"基本フォームドリル","notes":"砲丸・ジャベリックボール等を使ったグリップ・体幹連動の基礎動作反復。","category":"投擲メニュー","sets":"各10〜15回×2セット","intensity":"低〜中","rest":"種目間30秒","duration":"15分","target":"投てきパート","caution":"用具の扱い方の安全指導を徹底。投てきエリアの周囲確認を必ず行う。"},
+      {"group":"unclassified","masterId":"xlsx-throw-approach","name":"助走・体重移動練習","notes":"クロスステップ・ホップ等の助走から体重移動を伴う投てき動作を反復する。","category":"投擲メニュー","sets":"6〜8本","intensity":"中（70〜85％）","rest":"90秒","duration":"25分","target":"投てきパート","caution":"下半身から上半身への力の伝達を意識させる。投てき方向の安全確認を必須とする。"},
+      {"group":"sprint","masterId":"overall-speed-coordination","name":"全体スピード調整走","notes":"60m流しを70％、80％、90％で1本ずつ。種目別練習へ移る前の動き確認。","category":"全体メニュー（前半）","sets":"60m×3","intensity":"70〜90％","rest":"2分","duration":"12分","target":"全員","caution":"競走にしない"},
+      {"group":"sprint","masterId":"sprint-fly-30","name":"フライング30m","notes":"30m助走＋30m計測区間。最高速度時の接地とリラックスを狙う。","category":"短距離メニュー","sets":"4〜5本","intensity":"95〜100％","rest":"5〜6分","duration":"35分","target":"短距離","caution":"疲労でフォームが崩れたら終了"},
+      {"group":"sprint","masterId":"xlsx-sprint-accel","name":"加速走","notes":"30〜60mを徐々にスピードを上げながら加速していく走。","category":"短距離メニュー","sets":"4〜6本","intensity":"中〜高（80〜95％）","rest":"2〜3分","duration":"25分","target":"短距離パート","caution":"上体の起こし方とピッチ・ストライドのバランスを確認する。"},
+      {"group":"sprint","masterId":"xlsx-sprint-marks","name":"マーク走","notes":"マーカーを一定間隔で設置し、ストライドを合わせて走る（30〜50m）。","category":"短距離メニュー","sets":"4〜6本","intensity":"中（75〜85％）","rest":"2分","duration":"20分","target":"短距離パート","caution":"ピッチ向上と接地位置の修正が目的。マーク間隔は個人の歩幅に合わせて設定する。"},
+      {"group":"sprint","masterId":"xlsx-sprint-max-speed","name":"中間疾走（トップスピード）走","notes":"30〜40mの入りから60〜80mでトップスピードを維持して走る。","category":"短距離メニュー","sets":"3〜5本","intensity":"高（90〜100％）","rest":"4〜5分","duration":"30分","target":"短距離パート（中2・中3中心）","caution":"完全に回復してから次本を行う。疲労が見える場合は本数を減らす。"},
+      {"group":"sprint","masterId":"xlsx-sprint-wind","name":"流し（ウインドスプリント）","notes":"60〜80％程度の強度で力まずに走るスプリント。","category":"短距離メニュー","sets":"4〜6本","intensity":"低〜中（60〜80％）","rest":"60〜90秒","duration":"15分","target":"短距離パート","caution":"フォーム確認・調整が目的。全力で走らず、力を抜くことを意識させる。"},
+      {"group":"start","masterId":"sprint-accel-30","name":"加速走30m","notes":"3点またはクラウチングスタートから30m。最初の10歩の押し出しと姿勢変化を確認。","category":"短距離メニュー","sets":"4〜6本","intensity":"95％","rest":"3〜4分","duration":"30分","target":"短距離","caution":"本数より質を優先"},
+      {"group":"start","masterId":"xlsx-sprint-start","name":"スタートダッシュ","notes":"クラウチングスタートから10〜30mの一次加速を反復。","category":"短距離メニュー","sets":"6〜8本×2セット","intensity":"高（90〜100％）","rest":"本数間90秒、セット間3分","duration":"30分","target":"短距離パート（レベル別グループ）","caution":"反応と一次加速の姿勢を意識。フライング厳禁を徹底し、本数の詰め込みすぎに注意。"}
+    ];
+    const detailFields = {"category":"種類・区分","sets":"セット・本数","intensity":"強度","rest":"レスト","duration":"所要時間","target":"対象","caution":"注意点"};
+    const detailInputs = Object.keys(detailFields).map(key => [key, document.getElementById("item-" + key)]);
+    const migrationKey = "_practiceDrillsImported";
+    let storedSnapshot = null;
+    let storageReadable = true;
+    let savedData = {};
     const storageKey = "hamawakiac.drills.v1";
     const container = document.getElementById("groups");
     const status = document.getElementById("status");
@@ -160,15 +200,25 @@
     function loadItems() {
       let saved;
       try {
-        saved = JSON.parse(localStorage.getItem(storageKey));
+        storedSnapshot = localStorage.getItem(storageKey);
+        saved = JSON.parse(storedSnapshot);
+        if (storedSnapshot !== null && (!saved || typeof saved !== "object" || Array.isArray(saved))) {
+          throw new Error("Invalid drill data");
+        }
+        savedData = saved ?? {};
       } catch {
-        status.textContent = "保存済みのデータを読み込めませんでした。";
+        storageReadable = false;
+        status.textContent = "保存済みデータを読み込めませんでした。既存データを保護するため保存できません。";
       }
       function readList(id) {
         const list = saved?.[id];
         const valid = Array.isArray(list) && list.every(item =>
           typeof item?.name === "string" && typeof item.notes === "string"
         );
+        if (Object.hasOwn(savedData, id) && !valid) {
+          storageReadable = false;
+          status.textContent = "保存済みデータの形式を確認できませんでした。既存データを保護するため保存できません。";
+        }
         return valid ? list : (initialItems[id] ?? []).map(([name, notes = ""]) => ({ name, notes }));
       }
 
@@ -181,10 +231,24 @@
           ...readList("start")
         ];
         result.basic = [];
-        result.sprint = [];
+        result.sprint = readList("sprint");
         result.start = [];
       }
+      if (savedData[migrationKey] !== true) {
+        const existing = Object.values(result).flat();
+        for (const { group, ...drill } of importedDrills) {
+          if (existing.some(item => item.masterId === drill.masterId || drillContent(item) === drillContent(drill))) continue;
+          result[group].push(drill);
+          existing.push(drill);
+        }
+      }
       return result;
+    }
+
+    function drillContent(item) {
+      return JSON.stringify(["name", "notes", ...Object.keys(detailFields)].map(key =>
+        String(item[key] ?? "").normalize("NFKC").replace(/\s+/g, " ").trim()
+      ));
     }
 
     const items = loadItems();
@@ -200,6 +264,7 @@
       document.getElementById("editor-title").textContent = group.title + (item ? "の項目を編集" : "に項目を追加");
       nameField.value = item?.name ?? "";
       notesField.value = item?.notes ?? "";
+      for (const [key, input] of detailInputs) input.value = item?.[key] ?? "";
       nameField.setCustomValidity("");
       editor.showModal();
     }
@@ -305,7 +370,8 @@
       const { list, empty } = sections.get(group.id);
       const entries = items[group.id];
       empty.hidden = entries.length > 0;
-      list.replaceChildren(...entries.map(({ name, notes }, index) => {
+      list.replaceChildren(...entries.map((item, index) => {
+        const { name, notes } = item;
         const row = element("li");
         const handle = element("span", "⠿", "handle");
         handle.setAttribute("aria-hidden", "true");
@@ -328,6 +394,9 @@
         const description = element("div");
         description.append(element("strong", name, "item-name"));
         if (notes) description.append(element("p", notes, "notes"));
+        for (const [key, label] of Object.entries(detailFields)) {
+          if (item[key]) description.append(element("p", label + "　" + item[key], "notes"));
+        }
         const actions = element("div", "", "actions");
         const up = button("↑", () => move(group, index, index - 1, "up"), name + "を上へ");
         const down = button("↓", () => move(group, index, index + 1, "down"), name + "を下へ");
@@ -403,7 +472,8 @@
       }
       const { group, index } = editTarget;
       const target = index ?? items[group.id].length;
-      items[group.id][target] = { name, notes: notesField.value.trim() };
+      const details = Object.fromEntries(detailInputs.map(([key, input]) => [key, input.value]));
+      items[group.id][target] = { ...items[group.id][target], ...details, name, notes: notesField.value };
       editor.close();
       markChanged();
       renderList(group).children[target].querySelector('[data-action="edit"]').focus();
@@ -420,7 +490,17 @@
 
     save.addEventListener("click", () => {
       try {
-        localStorage.setItem(storageKey, JSON.stringify(items));
+        if (!storageReadable) {
+          status.textContent = "既存データを保護するため保存できません。";
+          return;
+        }
+        if (localStorage.getItem(storageKey) !== storedSnapshot) {
+          status.textContent = "別のタブで保存済みデータが更新されました。変更内容を控えてからページを再読み込みしてください。";
+          return;
+        }
+        const nextSnapshot = JSON.stringify({ ...savedData, ...items, [migrationKey]: true });
+        localStorage.setItem(storageKey, nextSnapshot);
+        storedSnapshot = nextSnapshot;
         changed = false;
         status.textContent = "このブラウザーに保存しました。";
       } catch {
