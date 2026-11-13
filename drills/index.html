@@ -3,47 +3,77 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="../menu/favicon.ico?v=20260801">
   <title>ドリル管理 | 浜脇AC</title>
   <style>
-    :root { color-scheme: light; font-family: "Atkinson Hyperlegible Next", system-ui, sans-serif; color: #152d2a; background: #f3f6f2; }
+    :root {
+      color-scheme: light;
+      --accent: #1d8fbf;
+      --bg: #f5f8f7;
+      --text: #16211d;
+      --muted: #35534a;
+      --line: #dfe8e4;
+      --panel: rgba(255,255,255,.92);
+      --shadow: 0 8px 24px rgba(15,83,64,.08);
+    }
     * { box-sizing: border-box; }
-    body { margin: 0; }
-    header { background: #123b33; color: white; padding: 2rem max(1rem, calc((100% - 60rem) / 2)); }
-    header a { color: #c7f0d7; }
-    h1 { margin: .55rem 0 0; font-size: clamp(1.9rem, 5vw, 3rem); }
-    main { max-width: 62rem; margin: auto; padding: 1rem; }
-    h2 { margin-top: 1.6rem; }
-    .section-title h2, h3, ol { margin: 0; }
-    .toolbar, .section-title, .actions { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-    .toolbar { position: sticky; top: 0; z-index: 1; background: #f3f6f2; padding: .65rem 0; }
-    .toolbar p { margin: 0; font-size: .9rem; }
-    .section-title { justify-content: space-between; }
-    section { background: #fff; border: 1px solid #d3e0d9; border-radius: .75rem; padding: 1rem; margin-bottom: .75rem; }
-    ol { padding: 0; list-style: none; }
-    li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .65rem; padding: .65rem 0; border-top: 1px solid #d3e0d9; }
-    li:first-child { margin-top: .75rem; }
-    section.drop-target { outline: 3px solid #08724d; outline-offset: -3px; }
-    li.drop-target { box-shadow: inset 0 3px #08724d; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, rgba(16,185,129,.09), transparent 30%),
+        radial-gradient(circle at top right, rgba(59,130,246,.07), transparent 28%), var(--bg);
+    }
+    header {
+      background: linear-gradient(135deg,#1778a8 0%,#2f8f8b 42%,#78a93f 68%,#e0cf18 100%);
+      color: #fff;
+      padding: 14px max(18px, calc((100% - 1464px) / 2)) 12px;
+      border-bottom: 5px solid #111;
+      box-shadow: 0 8px 30px rgba(0,0,0,.24);
+    }
+    header a { color: inherit; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,.45); }
+    h1 { font-size: 22px; margin: 6px 0 0; font-weight: 900; letter-spacing: .04em; text-shadow: 0 2px 4px rgba(0,0,0,.45); }
+    main { max-width: 1500px; margin: auto; padding: 22px 18px 36px; }
+    .toolbar, .actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .toolbar { position: sticky; top: 0; z-index: 1; background: var(--bg); padding: 10px 0; }
+    .toolbar p { margin: 0; font-size: 13px; color: var(--muted); }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+    .section-title { background: linear-gradient(90deg,#f1f5f9,#fff); border-radius: 15px 15px 0 0; border-bottom: 1px solid var(--line); padding: 12px 14px; }
+    .section-title h2 { margin: 0; font-size: 16px; color: #475569; }
+    section[data-group="sprint"] .section-title { background: linear-gradient(90deg,#fff0f0,#fff); }
+    section[data-group="sprint"] h2 { color: #9f2525; }
+    ol { margin: 0; padding: 10px; list-style: none; }
+    ol:empty { padding: 0; }
+    li {
+      display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 8px;
+      border: 1px solid var(--line); border-left: 6px solid #64748b; border-radius: 11px;
+      background: linear-gradient(90deg,#f1f5f9,#fff 42%); padding: 10px;
+    }
+    li + li { margin-top: 7px; }
+    section[data-group="sprint"] li { border-left-color: #ef4444; background: linear-gradient(90deg,#fff0f0,#fff 42%); }
+    section.drop-target { outline: 3px solid var(--accent); outline-offset: -3px; }
+    li.drop-target { box-shadow: inset 0 3px var(--accent); }
     .item-name, .notes { overflow-wrap: anywhere; }
-    .notes { margin: .2rem 0 0; white-space: pre-wrap; color: #39534d; }
-    .empty { margin: .6rem 0 0; color: #39534d; }
-    .handle { cursor: grab; min-width: 2rem; text-align: center; padding: .65rem .25rem; color: #39534d; touch-action: none; user-select: none; -webkit-touch-callout: none; }
-    li.moving { background: #e4f4e9; }
+    .notes { margin: .2rem 0 0; white-space: pre-wrap; color: var(--muted); }
+    .empty { margin: 0; padding: 12px 14px; color: var(--muted); }
+    .handle { cursor: grab; min-width: 2rem; text-align: center; padding: .65rem .25rem; color: var(--muted); touch-action: none; user-select: none; -webkit-touch-callout: none; }
+    li.moving { background: #eef8fb; }
     button, input, textarea, select { font: inherit; }
-    button { cursor: pointer; color: #173c33; background: white; border: 1px solid #a5bbb0; border-radius: .4rem; padding: .42rem .7rem; min-height: 2.5rem; }
+    button { cursor: pointer; color: #08684d; background: #eaf8f2; border: 1px solid transparent; border-radius: 11px; padding: 8px 12px; min-height: 40px; font-weight: 800; }
+    button:hover:enabled { background: #dff5ec; }
     button:disabled { cursor: default; opacity: .55; }
-    button.primary { color: #fff; background: #086146; border-color: #086146; }
-    button.danger { color: #91291e; }
-    :focus-visible { outline: 3px solid #036bc4; outline-offset: 2px; }
-    dialog { width: min(31rem, calc(100% - 2rem)); border: 1px solid #a5bbb0; border-radius: .75rem; padding: 1.25rem; }
-    dialog::backdrop { background: #122b27a0; }
-    dialog h2 { margin: 0 0 1rem; }
-    label { display: block; margin-bottom: .9rem; }
-    input, textarea, select { display: block; width: 100%; padding: .5rem; border: 1px solid #8aada0; border-radius: .35rem; }
+    button.primary, button.primary:hover:enabled { color: #111; background: #f3df24; box-shadow: 0 8px 18px rgba(0,0,0,.13); }
+    button.danger, button.danger:hover:enabled { color: #b91c1c; background: #fff1f2; border-color: #fecdd3; }
+    :focus-visible { outline: 3px solid #1778a8; outline-offset: 2px; }
+    dialog { width: min(31rem, calc(100% - 2rem)); color: var(--text); border: 1px solid var(--line); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); }
+    dialog::backdrop { background: rgba(22,33,29,.62); }
+    dialog h2 { margin: 0 0 16px; font-size: 21px; }
+    label { display: block; margin-bottom: 13px; color: var(--muted); font-size: 13px; font-weight: 800; }
+    input, textarea, select { display: block; width: 100%; margin-top: 6px; padding: 11px 12px; color: var(--text); background: #fff; border: 1px solid #cadad4; border-radius: 12px; }
     #item-group-label[hidden] { display: none; }
     textarea { resize: vertical; }
-    @media (max-width: 38rem) {
-      li { grid-template-columns: auto minmax(0, 1fr); }
+    @media (max-width: 48rem) {
+      li { grid-template-columns: auto minmax(0,1fr); }
       li .actions { grid-column: 2; }
     }
   </style>
