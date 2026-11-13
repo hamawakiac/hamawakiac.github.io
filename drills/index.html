@@ -288,7 +288,40 @@
       if (savedData._basic20mDrillsAdded !== true) {
         addBasic20mDrills(result);
       }
+      if (savedData._sprintSequenceUpdated !== true) {
+        updateSprintSequence(result);
+      }
       return result;
+    }
+
+    function updateSprintSequence(result) {
+      const previousSprint = result.sprint;
+      const sources = [previousSprint, ...groups.filter(({ id }) => id !== "sprint").map(({ id }) => result[id])];
+      const sequence = [
+        "腕回しスキップ40m",
+        "バックスキップ40m",
+        "腕回しサイドスキップ40m",
+        "クロススキップ40m",
+        "股関節回し前20m歩→20mスキップ",
+        "股関節回し後20m歩→20mスキップ",
+        "空中切り替え10mウォークバック×2",
+        "Aスキップ10mウォークバック×2",
+        "Bスキップ20mウォークバック×2",
+        "Cスキップ20mウォークバック×2",
+        "流し60m×1／1"
+      ];
+
+      result.sprint = sequence.map((name, index) => {
+        const oldName = initialItems.movement[index][0];
+        const matchingNames = new Set([name, oldName].map(normalizedText));
+        const matches = item => matchingNames.has(normalizedText(item.name));
+        const source = sources.find(list => list.some(matches));
+        if (!source) return { name, notes: "" };
+        const [item] = source.splice(source.findIndex(matches), 1);
+        return { ...item, name };
+      });
+
+      result.unclassified.push(...previousSprint);
     }
 
     function addBasic20mDrills(result) {
@@ -603,7 +636,7 @@
         }
         const customGroups = groups.filter(group => group.id.startsWith("custom-"));
         const nextSnapshot = JSON.stringify({
-          ...savedData, ...items, [migrationKey]: true, [customGroupsKey]: customGroups, _t2DrillAdded: true, _basic20mDrillsAdded: true
+          ...savedData, ...items, [migrationKey]: true, [customGroupsKey]: customGroups, _t2DrillAdded: true, _basic20mDrillsAdded: true, _sprintSequenceUpdated: true
         });
         localStorage.setItem(storageKey, nextSnapshot);
         storedSnapshot = nextSnapshot;
