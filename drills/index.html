@@ -59,11 +59,11 @@
     .handle { cursor: grab; min-width: 2rem; text-align: center; padding: .65rem .25rem; color: var(--muted); touch-action: none; user-select: none; -webkit-touch-callout: none; }
     li.moving { background: #eef8fb; }
     button, input, textarea, select { font: inherit; }
-    button { cursor: pointer; color: #08684d; background: #eaf8f2; border: 1px solid transparent; border-radius: 11px; padding: 8px 12px; min-height: 40px; font-weight: 800; }
+    button { cursor: pointer; color: #08684d; background: #eaf8f2; border: 1px solid #000; border-radius: 11px; padding: 8px 12px; min-height: 40px; font-weight: 800; }
     button:hover:enabled { background: #dff5ec; }
     button:disabled { cursor: default; opacity: .55; }
     button.primary, button.primary:hover:enabled { color: #111; background: #f3df24; box-shadow: 0 8px 18px rgba(0,0,0,.13); }
-    button.danger, button.danger:hover:enabled { color: #b91c1c; background: #fff1f2; border-color: #fecdd3; }
+    button.danger, button.danger:hover:enabled { color: #b91c1c; background: #fff1f2; }
     :focus-visible { outline: 3px solid #1778a8; outline-offset: 2px; }
     dialog { width: min(31rem, calc(100% - 2rem)); color: var(--text); border: 1px solid var(--line); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); }
     dialog::backdrop { background: rgba(22,33,29,.62); }
