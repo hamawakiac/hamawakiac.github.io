@@ -22,6 +22,7 @@
     ol { padding: 0; list-style: none; }
     li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .65rem; padding: .65rem 0; border-top: 1px solid #d3e0d9; }
     li:first-child { margin-top: .75rem; }
+    section.drop-target { outline: 3px solid #08724d; outline-offset: -3px; }
     li.drop-target { box-shadow: inset 0 3px #08724d; }
     .item-name, .notes { overflow-wrap: anywhere; }
     .notes { margin: .2rem 0 0; white-space: pre-wrap; color: #39534d; }
@@ -57,7 +58,7 @@
       <button id="save" class="primary" type="button">保存</button>
       <p id="status" role="status">変更はこのブラウザーに保存されます。</p>
     </div>
-    <p>項目の左端をドラッグすると、同じ欄の中で順序を変更できます。スマートフォンでは左端を長押しして移動するか、上下の矢印を使います。</p>
+    <p>項目の左端をドラッグして、移動先の欄に置いてください。スマートフォンでは左端を長押しして移動できます。同じ欄での並べ替えには上下の矢印も使えます。</p>
     <noscript>ドリル管理を使うには JavaScript を有効にしてください。</noscript>
     <div id="groups"></div>
   </main>
@@ -203,13 +204,14 @@
       editor.showModal();
     }
 
-    function move(group, from, to, focusAction) {
-      if (from === to) return;
-      const list = items[group.id];
-      const [item] = list.splice(from, 1);
-      list.splice(to, 0, item);
+    function move(group, from, to, focusAction, destination = group) {
+      const targetItems = items[destination.id];
+      if (group === destination && (from === to || (from === targetItems.length - 1 && to === targetItems.length))) return;
+      const [item] = items[group.id].splice(from, 1);
+      targetItems.splice(to, 0, item);
       markChanged();
-      const rows = renderList(group);
+      if (group !== destination) renderList(group);
+      const rows = renderList(destination);
       if (focusAction) {
         const row = rows.children[to];
         const control = row.querySelector('[data-action="' + focusAction + '"]');
@@ -217,20 +219,39 @@
       }
     }
 
-    function enableTouchMove(handle, row, list, group, index) {
+    let highlightedDrop;
+
+    function findDropTarget(node) {
+      const section = node?.closest("section[data-group]");
+      if (!section) return null;
+      const { group, list } = sections.get(section.dataset.group);
+      const row = node.closest("li");
+      return {
+        group,
+        index: row?.parentElement === list ? Array.from(list.children).indexOf(row) : items[group.id].length,
+        element: row?.parentElement === list ? row : section
+      };
+    }
+
+    function highlightDrop(target) {
+      highlightedDrop?.classList.remove("drop-target");
+      highlightedDrop = target?.element;
+      highlightedDrop?.classList.add("drop-target");
+    }
+
+    function enableTouchMove(handle, row, group, index) {
       let gesture;
 
       function highlight(x, y) {
-        gesture.target?.classList.remove("drop-target");
-        const candidate = document.elementFromPoint(x, y)?.closest("li");
-        gesture.target = candidate?.parentElement === list ? candidate : null;
-        if (gesture.target !== row) gesture.target?.classList.add("drop-target");
+        gesture.target = findDropTarget(document.elementFromPoint(x, y));
+        highlightDrop(gesture.target?.element === row ? null : gesture.target);
       }
 
       function scrollNearEdge() {
         const { x, y } = gesture;
         const edge = 76;
-        const step = y < edge ? -10 : y > window.innerHeight - edge ? 10 : 0;
+        const top = document.querySelector(".toolbar").getBoundingClientRect().bottom;
+        const step = y < Math.max(edge, top + 24) ? -10 : y > window.innerHeight - edge ? 10 : 0;
         if (step) {
           window.scrollBy(0, step);
           highlight(x, y);
@@ -243,11 +264,11 @@
         clearTimeout(gesture.timer);
         cancelAnimationFrame(gesture.frame);
         row.classList.remove("moving");
-        gesture.target?.classList.remove("drop-target");
+        highlightDrop(null);
         const target = gesture.active && event.type === "pointerup" ? gesture.target : null;
         gesture = undefined;
         handle.draggable = true;
-        if (target) move(group, index, Array.from(list.children).indexOf(target));
+        if (target) move(group, index, target.index, undefined, target.group);
       }
 
       handle.addEventListener("pointerdown", event => {
@@ -289,7 +310,7 @@
         const handle = element("span", "⠿", "handle");
         handle.setAttribute("aria-hidden", "true");
         handle.draggable = true;
-        enableTouchMove(handle, row, list, group, index);
+        enableTouchMove(handle, row, group, index);
         handle.addEventListener("dragstart", event => {
           if (row.classList.contains("moving")) {
             event.preventDefault();
@@ -301,23 +322,7 @@
         });
         handle.addEventListener("dragend", () => {
           dragSource = undefined;
-          list.querySelector(".drop-target")?.classList.remove("drop-target");
-        });
-        row.addEventListener("dragover", event => {
-          if (dragSource?.group !== group || dragSource.index === index) return;
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-          row.classList.add("drop-target");
-        });
-        row.addEventListener("dragleave", event => {
-          if (!row.contains(event.relatedTarget)) row.classList.remove("drop-target");
-        });
-        row.addEventListener("drop", event => {
-          row.classList.remove("drop-target");
-          if (dragSource?.group !== group) return;
-          event.preventDefault();
-          move(group, dragSource.index, index);
-          dragSource = undefined;
+          highlightDrop(null);
         });
 
         const description = element("div");
@@ -347,6 +352,7 @@
 
     for (const group of groups) {
       const section = element("section");
+      section.dataset.group = group.id;
       const title = element("h2", group.title);
       title.id = "heading-" + group.id;
       section.setAttribute("aria-labelledby", title.id);
@@ -357,10 +363,31 @@
       const empty = element("p", "登録された項目はありません。", "empty");
       section.append(heading);
       section.append(list, empty);
-      sections.set(group.id, { list, empty, add });
+      sections.set(group.id, { group, list, empty, add });
       container.append(section);
       renderList(group);
     }
+
+    container.addEventListener("dragover", event => {
+      if (!dragSource) return;
+      const target = findDropTarget(event.target);
+      highlightDrop(target);
+      if (!target) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    });
+    container.addEventListener("dragleave", event => {
+      if (!container.contains(event.relatedTarget)) highlightDrop(null);
+    });
+    container.addEventListener("drop", event => {
+      const target = findDropTarget(event.target);
+      if (!dragSource || !target) return;
+      event.preventDefault();
+      const { group, index } = dragSource;
+      dragSource = undefined;
+      highlightDrop(null);
+      move(group, index, target.index, undefined, target.group);
+    });
 
     document.getElementById("new-drill").addEventListener("click", () => openEditor(groups.find(group => group.id === "unclassified")));
 
